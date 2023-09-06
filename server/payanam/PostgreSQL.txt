@@ -1,0 +1,63 @@
+CREATE TABLE users (
+	user_id serial PRIMARY KEY,
+	email VARCHAR ( 255 ) UNIQUE NOT NULL,
+	"name" VARCHAR ( 100 ) NOT NULL,
+	"password" VARCHAR ( 255 ) UNIQUE NOT NULL,
+	"role" VARCHAR ( 10 ) DEFAULT 'USER' NOT NULL
+);
+
+
+CREATE TABLE bus (
+	bus_id serial PRIMARY KEY,
+	bus_route VARCHAR ( 10 ) NOT NULL,
+	bus_type VARCHAR ( 10 ) DEFAULT 'NORMAL' NOT NULL,
+	UNIQUE(bus_route, bus_type)
+);
+
+
+CREATE TABLE stoppings (
+	stopping_id serial PRIMARY KEY,
+	stopping_name VARCHAR ( 50 ) UNIQUE NOT NULL
+);
+
+
+CREATE TABLE bus_stop_junction (
+	bus_id INT,
+	stopping_id INT,
+	stopping_order INT NOT NULL,
+	UNIQUE(bus_id, stopping_id),
+	CONSTRAINT fk_bus
+      FOREIGN KEY(bus_id) 
+	  REFERENCES bus(bus_id)
+	  ON DELETE CASCADE,
+	CONSTRAINT fk_stopping
+      FOREIGN KEY(stopping_id) 
+	  REFERENCES stoppings(stopping_id)
+	  ON DELETE CASCADE
+);
+
+
+CREATE TABLE ticket (
+	ticket_id serial PRIMARY KEY, 
+	user_id INT,
+	bus_id INT,
+	"from" VARCHAR ( 50 ) NOT NULL,
+	"to" VARCHAR ( 50 ) NOT NULL,
+	book_time TIMESTAMP NOT NULL,
+	payment_status BOOLEAN NOT NULL,
+	price INT NOT NULL,
+	CONSTRAINT fk_bus
+      FOREIGN KEY(bus_id) 
+	  REFERENCES bus(bus_id)
+	  ON DELETE CASCADE,
+	CONSTRAINT fk_user
+      FOREIGN KEY(user_id) 
+	  REFERENCES users(user_id)
+	  ON DELETE CASCADE
+);
+
+
+
+
+SELECT b.bus_route, s.stopping_name from bus b inner join bus_stop_junction bs on b.bus_id = bs.bus_id inner join stoppings s on s.stopping_id = bs.stopping_id WHERE b.bus_id = :bus_id ORDER BY stopping_order ASC;
+
